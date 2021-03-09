@@ -4,13 +4,14 @@ from datetime import datetime
 import os
 import csv
 import pprint
+import operator
 
 FILES = ["march_1", "march_2", "march_3", "march_4"]
 EXT = ".csv"
 CALL_LOG_DIR = "call_logs/"
 FLEX_LOG_DIR = "flex_logs/"
 INTERNAL_LOG_DIR = "internal_logs/"
-OUTBOUND = "+61352029217"
+OUTBOUND = "--REDACTED--"
 
 log = Logger(os.path.basename(__file__))
 
@@ -34,25 +35,39 @@ def load_file(file_name: str) -> List[List]:
     return file_content
 
 
-def internal_log_data(internal_log_file: str) -> None:
+def internal_log_count(internal_log_file: str) -> None:
     internal_log_data: List = load_file(internal_log_file)
-    print(f"total records in internal_log_file: {len(internal_log_data)}")
+    log.info(f"total records in internal_log_file: {len(internal_log_data)}")
 
 
-def flex_data(flex_log_file: str):
+def flex_count(flex_log_file: str) -> None:
     flex_log_data: List = load_file(flex_log_file)
     flex_log_counter: int = 0
     for row in flex_log_data:
         flex_log_counter += int(row[2])
-    print(f"total overflow count as per flex insights: {flex_log_counter}")
+    log.info(f"total overflow count as per flex insights: {flex_log_counter}")
 
 
-def call_log_data(call_log_file: str):
+def api_req_count(call_log_file: str) -> List:
+    call_log_data: List = load_file(call_log_file)
+    call_log_counter: int = 0
+    data: List = []
+    for row in call_log_data:
+        if row[6] == OUTBOUND and row[7] == "Outgoing API":
+            data.append({
+                "to": row[6],
+                "from": row[5],
+                "direction": row[7],
+                "start_time": row[2]
+            })
+            call_log_counter += 1
+    log.info(f"total count where called_to = '{OUTBOUND}' and direction = 'Outgoing API': {call_log_counter}")
+    return data
+
+
+def dial_req_count(call_log_file: str) -> List:
     call_log_data: List = load_file(call_log_file)
     data: List = []
-    # overflow_count: int = 0
-    # non_overflow_count: int = 0
-    overflow_gaps: Dict = {}
     for row in call_log_data:
         if row[6] == OUTBOUND and row[7] == "Outgoing Dial":
             data.append({
@@ -69,7 +84,6 @@ def call_log_data(call_log_file: str):
                     "start_time": row[2]
                 },
                 "overflow_gap": "",
-                # "is_overflow": ""
             })
     for elem in data:
         for row in call_log_data:
@@ -82,35 +96,35 @@ def call_log_data(call_log_file: str):
                                          "%H:%M:%S %Y-%m-%d") - datetime.strptime(
                     elem["incoming"]["start_time"].replace("AEDT ", ''), "%H:%M:%S %Y-%m-%d")).total_seconds()
                 elem["overflow_gap"] = gap
+
+    log.info(f"total count where called_to = '{OUTBOUND}' and direction = 'Outgoing Dial': {len(data)}")
+    return data
+
+
+def print_stats(data: List) -> None:
+    overflow_gaps: Dict = {}
     for e in data:
         key = e["overflow_gap"]
         if key not in overflow_gaps:
             overflow_gaps[key] = 1
         else:
             overflow_gaps[key] += 1
-
-    print(f"total: {len(data)}")
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(overflow_gaps)
-    # print(f"total overflown: {overflow_count}")
-    # print(f"total other: {non_overflow_count}")
-    # print(f"{overflow_count} + {non_overflow_count} = {non_overflow_count + overflow_count}")
-    # pp = pprint.PrettyPrinter(indent=2)
-    # for e in data:
-    #     if not e["is_overflow"]:
-    #         pp.pprint(e)
 
 
 if __name__ == '__main__':
     for file in FILES:
-        print(f"*****_{file}_*****")
+        log.info(f"*****_{file}_*****")
         internal_log_file: str = get_file(file, INTERNAL_LOG_DIR)
         call_log_file: str = get_file(file, CALL_LOG_DIR)
         flex_log_file: str = get_file(file, FLEX_LOG_DIR)
-        internal_log_data(internal_log_file)
-        print("===================")
-        flex_data(flex_log_file)
-        print("===================")
-        call_log_data(call_log_file)
-        print("===================")
-
+        internal_log_count(internal_log_file)
+        log.info("===================")
+        flex_count(flex_log_file)
+        log.info("===================")
+        req_instances: List = api_req_count(call_log_file)
+        log.info("===================")
+        # dial_instances: List = dial_req_count(call_log_file)
+        log.info("===================")
+        # print_stats(dial_instances)
