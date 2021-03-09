@@ -3,15 +3,13 @@ from typing import List, Dict
 from datetime import datetime
 import os
 import csv
-import pprint
-import operator
 
 FILES = ["march_1", "march_2", "march_3", "march_4"]
 EXT = ".csv"
 CALL_LOG_DIR = "call_logs/"
 FLEX_LOG_DIR = "flex_logs/"
 INTERNAL_LOG_DIR = "internal_logs/"
-OUTBOUND = "--REDACTED--"
+OUTBOUND = "__REDACTED__"
 
 log = Logger(os.path.basename(__file__))
 
@@ -83,7 +81,7 @@ def dial_req_count(call_log_file: str) -> List:
                     "direction": row[7],
                     "start_time": row[2]
                 },
-                "overflow_gap": "",
+                "overflow_gap": 0.0,
             })
     for elem in data:
         for row in call_log_data:
@@ -92,7 +90,7 @@ def dial_req_count(call_log_file: str) -> List:
                 elem["incoming"]["from"] = row[5]
                 elem["incoming"]["direction"] = row[7]
                 elem["incoming"]["start_time"] = row[2]
-                gap = (datetime.strptime(elem["outgoing"]["start_time"].replace("AEDT ", ''),
+                gap: float = (datetime.strptime(elem["outgoing"]["start_time"].replace("AEDT ", ''),
                                          "%H:%M:%S %Y-%m-%d") - datetime.strptime(
                     elem["incoming"]["start_time"].replace("AEDT ", ''), "%H:%M:%S %Y-%m-%d")).total_seconds()
                 elem["overflow_gap"] = gap
@@ -104,13 +102,14 @@ def dial_req_count(call_log_file: str) -> List:
 def print_stats(data: List) -> None:
     overflow_gaps: Dict = {}
     for e in data:
-        key = e["overflow_gap"]
+        key: float = e["overflow_gap"]
         if key not in overflow_gaps:
             overflow_gaps[key] = 1
         else:
             overflow_gaps[key] += 1
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(overflow_gaps)
+    log.info("Overflow_gaps ~> { gap_amount_sec: num_occurrences}")
+    for key in overflow_gaps:
+        log.info(f"{{ {key}: {overflow_gaps[key]} }}", indent=1)
 
 
 if __name__ == '__main__':
@@ -125,6 +124,6 @@ if __name__ == '__main__':
         log.info("===================")
         req_instances: List = api_req_count(call_log_file)
         log.info("===================")
-        # dial_instances: List = dial_req_count(call_log_file)
+        dial_instances: List = dial_req_count(call_log_file)
         log.info("===================")
-        # print_stats(dial_instances)
+        print_stats(dial_instances)
