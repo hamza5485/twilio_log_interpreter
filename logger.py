@@ -18,10 +18,12 @@ class Logger:
         "ERROR": "ERROR",
     }
 
-    def __init__(self, module):
+    def __init__(self, module, indent_char='\t'):
         self.module = module.upper()
+        self.indent_char = indent_char
 
-    def format_msg(self, message, severity):
+    def format_msg(self, message, severity, i=0):
+        indent = self.indent_char * i
         ts = datetime.datetime.now().isoformat()
         start = ""
         end = self.COLORS["END"]
@@ -33,20 +35,20 @@ class Logger:
             start = self.COLORS["RED"]
         elif severity == self.SEVERITY["INFO"]:
             start = self.COLORS["WHITE"]
-        return f"{start}[{ts}][{self.module}][{severity}] {message}{end}"
+        return f"{start}[{ts}][{self.module}][{severity}] {indent}{message}{end}"
 
-    def info(self, message):
-        log_message = self.format_msg(message, self.SEVERITY["INFO"])
+    def info(self, message, indent=0):
+        log_message = self.format_msg(message, self.SEVERITY["INFO"], indent)
         print(log_message)
 
-    def success(self, message):
-        log_message = self.format_msg(message, self.SEVERITY["SUCCESS"])
+    def success(self, message, indent=0):
+        log_message = self.format_msg(message, self.SEVERITY["SUCCESS"], indent)
         print(log_message)
 
-    def error(self, message):
-        log_message = self.format_msg(message, self.SEVERITY["ERROR"])
+    def error(self, message, indent=0):
+        log_message = self.format_msg(message, self.SEVERITY["ERROR"], indent)
         print(log_message)
 
-    def warn(self, message):
-        log_message = self.format_msg(message, self.SEVERITY["WARN"])
+    def warn(self, message, indent=0):
+        log_message = self.format_msg(message, self.SEVERITY["WARN"], indent)
         print(log_message)
