@@ -6,9 +6,9 @@ import csv
 
 FILES = ["march_1", "march_2", "march_3", "march_4"]
 EXT = ".csv"
-CALL_LOG_DIR = "call_logs/"
-FLEX_LOG_DIR = "flex_logs/"
-INTERNAL_LOG_DIR = "internal_logs/"
+CALL_LOG_DIR = "./outbound_discrepancies/call_logs/"
+FLEX_LOG_DIR = "./outbound_discrepancies/flex_logs/"
+INTERNAL_LOG_DIR = "./outbound_discrepancies/internal_logs/"
 OUTBOUND = "__REDACTED__"
 
 log = Logger(os.path.basename(__file__))
