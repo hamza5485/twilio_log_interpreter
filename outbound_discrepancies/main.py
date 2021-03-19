@@ -1,36 +1,17 @@
 from logger import Logger
 from typing import List, Dict
 from datetime import datetime
+from lib.functions import get_file, load_file
 import os
-import csv
 
 FILES = ["march_1", "march_2", "march_3", "march_4"]
-EXT = ".csv"
-CALL_LOG_DIR = "./outbound_discrepancies/call_logs/"
-FLEX_LOG_DIR = "./outbound_discrepancies/flex_logs/"
-INTERNAL_LOG_DIR = "./outbound_discrepancies/internal_logs/"
+MAIN_DIR = "outbound_discrepancies/"
+CALL_LOG_DIR = f"{MAIN_DIR}call_logs"
+FLEX_LOG_DIR = f"{MAIN_DIR}flex_logs"
+INTERNAL_LOG_DIR = f"{MAIN_DIR}internal_logs"
 OUTBOUND = "__REDACTED__"
 
 log = Logger(os.path.basename(__file__))
-
-
-def get_file(file_name: str, dir: str) -> str:
-    """returns file name for provided date"""
-    if file_name in FILES:
-        return dir + file_name + EXT
-    else:
-        log.error(f"{file_name}{EXT} not found in {dir}")
-        raise Exception("404")
-
-
-def load_file(file_name: str) -> List[List]:
-    file_content = []
-    with open(file_name) as csv_file:
-        reader = csv.reader(csv_file)
-        next(reader, None)
-        for row in reader:
-            file_content.append(row)
-    return file_content
 
 
 def internal_log_count(internal_log_file: str) -> None:
