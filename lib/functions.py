@@ -1,4 +1,4 @@
-from logger import Logger
+from lib.logger import Logger
 from typing import List
 import pathlib
 import os
