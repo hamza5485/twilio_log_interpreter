@@ -1,14 +1,14 @@
-from logger import Logger
+from lib.logger import Logger
 from typing import List, Dict
 from datetime import datetime
 from lib.functions import get_file, load_file
 import os
 
 FILES = ["march_1", "march_2", "march_3", "march_4"]
-MAIN_DIR = "outbound_discrepancies/"
-CALL_LOG_DIR = f"{MAIN_DIR}call_logs"
-FLEX_LOG_DIR = f"{MAIN_DIR}flex_logs"
-INTERNAL_LOG_DIR = f"{MAIN_DIR}internal_logs"
+PROJ_DIR = "outbound_discrepancies/"
+CALL_LOG_DIR = f"{PROJ_DIR}call_logs"
+FLEX_LOG_DIR = f"{PROJ_DIR}flex_logs"
+INTERNAL_LOG_DIR = f"{PROJ_DIR}internal_logs"
 OUTBOUND = "__REDACTED__"
 
 log = Logger(os.path.basename(__file__))
